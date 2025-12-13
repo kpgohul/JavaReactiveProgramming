@@ -19,7 +19,10 @@ public class SchedulerUsage {
 //        Mono.empty().subscribeOn(Schedulers.parallel()).subscribe(); // Decide where the entire source should run the at the point (from upstream)
 
 
-        single();
+//        single();
+
+        demo();
+
     }
 
     //  Run on current source thread, no scheduling and thread switching
@@ -79,6 +82,30 @@ public class SchedulerUsage {
                 .subscribe();
 
         CommonUtils.timeOut(Duration.ofSeconds(2));
+    }
+
+    public static void demo(){
+        Mono.fromCallable(() -> {
+                    System.out.println("DB call thread = " + Thread.currentThread().getName());
+                    Thread.sleep(1000);
+                    return "DB Result";
+                })
+                .subscribeOn(Schedulers.boundedElastic())   // blocking DB call
+                .map(v -> {
+                    System.out.println("Mapping on = " + Thread.currentThread().getName());
+                    return v.toUpperCase();
+                })
+                .publishOn(Schedulers.parallel())           // switch to CPU pool
+                .map(v -> {
+                    System.out.println("CPU work on = " + Thread.currentThread().getName());
+                    return v + " DONE";
+                })
+                .subscribe(result -> {
+                    System.out.println("Final result received on = " + Thread.currentThread().getName());
+                });
+
+        CommonUtils.timeOut(Duration.ofSeconds(5));
+
     }
 
 
