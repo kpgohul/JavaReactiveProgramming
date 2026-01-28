@@ -7,6 +7,14 @@ import java.util.concurrent.CompletableFuture;
 
 public class CompletableFutureUsage {
 
+    // CompletableFuture is a powerful enhancement over Future because it can run tasks asynchronously
+    // without needing an ExecutorService using methods like runAsync() and supplyAsync(). It supports non-blocking
+    // callbacks similar to JavaScript Promises, using methods such as thenApply(), thenAccept(), and thenRun(),
+    // allowing you to attach actions that should execute when the result is ready. CompletableFuture also enables chaining
+    // multiple asynchronous operations, combining several futures together, and provides built-in exception handling methods
+    // for smoother error management. Overall, it allows non-blocking, flexible, and more readable asynchronous programming
+    // without relying on get() everywhere.
+
     // Allow Async behaviour
     // non-blocking
     // call-backs
