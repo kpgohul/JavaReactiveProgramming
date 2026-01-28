@@ -9,6 +9,11 @@ import java.util.concurrent.*;
 
 public class FutureUsage {
 
+    // Future Disadvantage,
+    // cann't run async ny itself, 
+    // doesn't support callback and chaining the result
+    // .get() will block the thread!
+
     // Runnable - execution + doesn't has return value
     // Callable - execution + has return value
 
