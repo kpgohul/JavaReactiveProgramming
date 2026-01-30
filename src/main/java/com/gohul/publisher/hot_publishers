@@ -1,0 +1,83 @@
+Code snippet for all the types of hot publishers,
+
+1) Sinks.many():
+
+  a) Multicast(broadcast to all current subscribers)
+  Sinks.Many<Integer> sink = Sinks.many()
+          .multicast()
+          .onBackpressureBuffer();
+  
+  Flux<Integer> flux = sink.asFlux();
+  flux.subscribe(v -> System.out.println("Sub1: " + v));
+  sink.tryEmitNext(1);
+  flux.subscribe(v -> System.out.println("Sub2: " + v));
+  sink.tryEmitNext(2);
+
+  b) Uniucast(only one subscriber allowed)
+  Sinks.Many<String> sink = Sinks.many()
+          .unicast()
+          .onBackpressureBuffer();
+  
+  Flux<String> flux = sink.asFlux();
+  flux.subscribe(v -> System.out.println("Receiver: " + v));
+  sink.tryEmitNext("A");
+  sink.tryEmitNext("B");
+
+  c) Replay (replay history to new subscribers)
+  Sinks.Many<Integer> sink = Sinks.many()
+          .replay()
+          .limit(2); // replay last 2 items
+  
+  Flux<Integer> flux = sink.asFlux();
+  
+  sink.tryEmitNext(10);
+  sink.tryEmitNext(20);
+  sink.tryEmitNext(30);
+  flux.subscribe(v -> System.out.println("Sub1: " + v)); // gets 20, 30
+  sink.tryEmitNext(40);
+  flux.subscribe(v -> System.out.println("Sub2: " + v)); // gets 30, 40
+
+2) ConnectableFlux — Older Hot Publishers
+
+  a) publish() — Hot after connect()
+  ConnectableFlux<Integer> hot = Flux.range(1, 5)
+          .delayElements(Duration.ofSeconds(1))
+          .publish();
+  
+  hot.subscribe(v -> System.out.println("Sub1: " + v));
+  hot.connect(); // start emitting
+  Thread.sleep(2500);
+  hot.subscribe(v -> System.out.println("Sub2: " + v)); // misses old items
+  
+  b) replay() — Hot + Replay Cache
+  ConnectableFlux<Integer> replay = Flux.range(1, 5)
+          .delayElements(Duration.ofMillis(300))
+          .replay(2);  // replay last 2 values
+  
+  replay.connect();
+  Thread.sleep(1000);
+  replay.subscribe(v -> System.out.println("Late Subscriber: " + v)); // gets last 2
+
+3) share() — Hot Publisher with refCount()
+Flux<Long> shared = Flux.interval(Duration.ofMillis(500))
+        .share();
+
+shared.subscribe(v -> System.out.println("Sub1: " + v));
+Thread.sleep(1500);
+shared.subscribe(v -> System.out.println("Sub2: " + v)); // misses initial ticks
+
+4) Built-in Hot Source — interval()
+Flux<Long> hot = Flux.interval(Duration.ofSeconds(1));
+hot.subscribe(v -> System.out.println("Sub1: " + v));
+Thread.sleep(3000);
+hot.subscribe(v -> System.out.println("Sub2: " + v)); // only future ticks
+
+
+
+
+
+
+
+
+
+
